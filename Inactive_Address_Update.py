@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By # Used to locate elements within a w
 from selenium.webdriver.chrome.options import Options # Also used to select options in dropdown menu
 from selenium.webdriver.support.wait import WebDriverWait # Used for Implicit and Explicit Waits
 from selenium.webdriver.support import expected_conditions as EC # Something also used for Waits
+from selenium.webdriver.support.select import Select # Used for selecting options in a dropdown menu
 from selenium.webdriver.common.action_chains import ActionChains # Used in clearing out username before putting in login info
 from screeninfo import get_monitors
 import pandas as pd # Turns Excel sheet into a dataframe
@@ -158,7 +159,7 @@ def File_Access_Attempts(attempts):
     print('Number of additional attempts needed: ' + str(attempt))
     print('File Access Complete')
     return dataframe1
-dataframe1 = File_Access_Attempts(11) # 10 File open attempts
+dataframe1 = File_Access_Attempts(4) # 3 File open attempts
 
 # ----------------- Prompt window for which ref # to start on (stored as a string) ------------------------
 def Ref_Search(searches):
@@ -209,7 +210,7 @@ for index, row in dataframe1.iloc[int(ref_row):].iterrows(): # Start from ref ro
     full_name = str(row['Last Name']) + ', ' + str(row['First Name'])
     reference_num = str(row['Ref'])
 
-    # Check for if ref # has 9 digits, if not add a 
+    # Check for if ref # has 9 digits, if not add a 0 at the end
     length_ref = len(reference_num)
     if length_ref < 9:
         for i in range(9 - length_ref):
@@ -317,3 +318,85 @@ for index, row in dataframe1.iloc[int(ref_row):].iterrows(): # Start from ref ro
 
         print('Mailing Address (i = ' + str(index) + ') SUCCESSFULLY clicked...')
         print('Number of additional attempts needed: ' + str(attempt))
+
+# ------------------ FUNCTION FOR CLICKING INTO MAIL ADDRESS AND SAVING ----------------------
+    def Mail_Click_And_Save(index):
+        # TODO: ADD PROMPT WINDOW FOR CHECKING FOR INTERNET SPEED AND MAKE # OF ATTEMPTS BASED ON THAT (SLOW, MED, FAST)
+        # Try attempts until not stale
+        print('\nAttempting to Click Mailing Address (i = ' + str(index) + ')...')
+        Mail_Stale_Attempt(index, 10, 0.2) # Parameters: (Index, # of attempts, # of seconds for each wait)
+
+        # EXPLICIT WAIT UNTIL SAVE BUTTON IS CLICKABLE
+        try:
+            element = WebDriverWait(driver, 10)
+            element.until(EC.element_to_be_clickable((By.CLASS_NAME, 'default')))
+        except:
+            print('Some Error Occurred... Logging Out')
+            Log_Out()
+
+        # Checking for any matches with excel and pairing with respective priority
+        web_address = driver.find_element(By.ID, 'address_street').text # Look at street address textbox
+        print('Current Address: ' + str(web_address))
+
+        # if web_address == str(row['Address']): # If address MATCHES WITH NEW ADDRESS LINE
+        #     select = Select(driver.find_element(By.NAME, 'priority'))
+        #     print('Current Priority: ' + str(select.first_selected_option.text))
+        #     print('Matching NEW Address Line...')
+        #     global new_address
+        #     new_address = True
+            
+        #     if str(select.first_selected_option.text) == 'Normal Priority':
+        #         print('Address Line already correct priority...')
+        #         driver.find_element(By.XPATH, '//button[normalize-space()="Cancel"]').click() # Presses the cancel button
+        #         print('Cancel Button Pressed...')
+
+        #     else:
+        #         print('Making NORMAL Priority...')
+        #         select.select_by_value('0') # (value = 0) Make NORMAL PRIORITY
+        #         driver.find_element(By.CLASS_NAME, 'default').click() # Presses the save button
+        #         print('Save Button Pressed...')
+
+        # elif web_address == str(row['Original Address Line 1']): # If address MATCHES WITH ORIGINAL ADDRESS LINE
+        #     select = Select(driver.find_element(By.NAME, 'priority')) # MAKE INACTIVE PRIORITY
+        #     print('Current Priority: ' + str(select.first_selected_option.text))
+
+        #     print('Matching ORIGINAL Address Line...')
+        #     if str(select.first_selected_option.text) == 'Inactive':
+        #         print('Address Line already correct priority...')
+        #         driver.find_element(By.XPATH, '//button[normalize-space()="Cancel"]').click() # Presses the cancel button
+        #         print('Cancel Button Pressed...')
+
+        #     else:
+        #         print('Making INACTIVE Priority...')
+        #         select.select_by_value('-2') # (value = -2) Make INACTIVE PRIORITY
+        #         driver.find_element(By.CLASS_NAME, 'default').click() # Presses the save button
+        #         print('Save Button Pressed...')
+
+        # else: # If address DOES NOT MATCH WITH ANYTHING
+        #     select = Select(driver.find_element(By.NAME, 'priority')) # MAKE INACTIVE PRIORITY
+        #     print('Current Priority: ' + str(select.first_selected_option.text))
+        #     print('Unknown Address...')
+        #     print('Making INACTIVE Priority...') 
+        #     select.select_by_value('-2') # (value = -2) Make INACTIVE PRIORITY
+        #     driver.find_element(By.CLASS_NAME, 'default').click() # Presses the save button
+
+        # EXPLICIT WAIT UNTIL ADDRESS RESULTS TABLE IS VISIBLE (DISPLAYED ON SCREEN)
+        try:
+            element = WebDriverWait(driver, 10)
+            element.until(EC.visibility_of_element_located((By.ID, 'part_profile_address_results')))
+        except:
+            print('Some Error Occurred... Logging Out')
+            Log_Out()
+
+# -------------- Looking through Addresses and Changing Priorities -------------------- 
+    if mail_count > 1:
+        for i in range(len(mail_addresses)): # https://www.codesansar.com/python-programming-examples/print-1-12-123-1234-pattern.htm
+            for j in range(i+1):
+                #print(str(j)) # Pattern now goes j = 0 -> 01 -> 012 (better for if values change places after a save)
+                Mail_Click_And_Save(j) # Clicks into each mail
+        
+    elif mail_count == 1:
+        Mail_Click_And_Save(0)
+
+    else:
+        print('Unknown Error: Going to next part of code')
