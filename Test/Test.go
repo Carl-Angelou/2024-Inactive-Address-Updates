@@ -42,7 +42,9 @@ func main() {
 			html, err = dom.GetOuterHTML().WithNodeID(rootNode.NodeID).Do(ctx)
 			return err
 		 }),
-	); err != nil {
+	) 
+	
+	err != nil {
 		log.Fatal(err)
 	}
 
