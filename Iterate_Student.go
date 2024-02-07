@@ -10,41 +10,41 @@ import (
 	"github.com/chromedp/cdproto/dom"
 )
 
-
-
 func main() {
-	chromedp.Flag("headless",  false)
-	chromedp.Flag("hide-scrollbars", false)
-	chromedp.Flag("mute-audio", false)
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", false),
+		chromedp.Flag("disable-gpu", false),
+		chromedp.Flag("enable-automation", false),
+		chromedp.Flag("disable-extensions", false),
+	)
+	
+	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+	
+	// create context
+	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
+	defer cancel()
 
-	// initialize a controllable Chrome instance
-	ctx, cancel := chromedp.NewContext(
-		context.Background(),
-	 )
-	 // to release the browser resources when
-	 // it is no longer needed
-	 defer cancel()
- 
-	 var html string
-	 err := chromedp.Run(ctx,
-		// visit the target page
-		chromedp.Navigate("https://scrapingclub.com/exercise/list_infinite_scroll/"),
+	var html string
+	
+	if err := chromedp.Run(ctx,
+		chromedp.Navigate("https://scrapingclub.com/exercise/list_infinite_scroll"),
 		// wait for the page to load
 		chromedp.Sleep(2000*time.Millisecond),
 		// extract the raw HTML from the page
 		chromedp.ActionFunc(func(ctx context.Context) error {
-		   // select the root node on the page
-		   rootNode, err := dom.GetDocument().Do(ctx)
-		   if err != nil {
-			  return err
-		   }
-		   html, err = dom.GetOuterHTML().WithNodeID(rootNode.NodeID).Do(ctx)
-		   return err
-		}),
-	 )
-	 if err != nil {
-		log.Fatal("Error while performing the automation logic:", err)
-	 }
- 
-	 fmt.Println(html)
+			// select the root node on the page
+			rootNode, err := dom.GetDocument().Do(ctx)
+			if err != nil {
+			   return err
+			}
+			
+			html, err = dom.GetOuterHTML().WithNodeID(rootNode.NodeID).Do(ctx)
+			return err
+		 }),
+	); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(html)
 }
