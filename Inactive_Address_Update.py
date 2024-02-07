@@ -12,6 +12,7 @@ import tkinter
 from tkinter import filedialog # Used to open up file dialog
 import pyautogui # Used primarily for message/confirm boxes
 import pymsgbox # Formatting for confirm boxes
+import time
 
 # ---------------- Monitor resolution & display default message box ----------------------
 primary_mon_width = 0
