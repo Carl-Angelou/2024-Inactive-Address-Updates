@@ -3,7 +3,7 @@ package main
 import (
 	"context"
     "log"
-	"time"
+	// "time"
 	"fmt"
 
     "github.com/chromedp/chromedp"
@@ -26,25 +26,48 @@ func main() {
 	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
 	defer cancel()
 
-	file, err := excelize.OpenFile("students.xlsx")
+	// Open up file
+	file, err := excelize.OpenFile("C:/Users/carla/Downloads/179972 - Values - NCOA updates.xlsx") // https://www.kelche.co/blog/go/excel/
 	if err != nil {
 			log.Fatal(err)
 	}
+
+	// Get all row values
+	rows, err := file.GetRows("179972  Values  NCOA updates")
+	if err != nil {
+			log.Fatal(err)
+	}
+	fmt.Printf("Row: %d\n", len(rows))
+
+	// Get all column values
+	columns, err := file.GetCols("179972  Values  NCOA updates")
+	if err != nil {
+			log.Fatal(err)
+	}
+	fmt.Printf("Columns: %d\n", len(columns))
+
+	// Get all Ref numbers
+	// for _, row := range rows {
+	// 	if len(row) > 0 { // Check if the row is not empty
+	// 		fmt.Println(row[0]) // Print the value from the first column
+	// 	}
+	// }
 	
+	// Run chromedp
 	if err := chromedp.Run(ctx,
 		// -------------------------- Enter School Data for Website ------------------------------
-		chromedp.Navigate("https://discover.highpoint.edu/manage/"),
-		chromedp.WaitVisible("#userNameInput"),
-		chromedp.Sleep(1000*time.Millisecond), // Wait 1 second
-		chromedp.SendKeys("#userNameInput", "clapiz"),
-		chromedp.SendKeys("#passwordInput", "Mich7890!@#$"),
-		chromedp.Sleep(1000*time.Millisecond),
-		chromedp.Click("#submitButton", chromedp.ByQuery), // Use cssSelector value (use SelectorsHub)
-		chromedp.Sleep(2000*time.Millisecond),
+		// chromedp.Navigate("https://discover.highpoint.edu/manage/"),
+		// chromedp.WaitVisible("#userNameInput"),
+		// chromedp.Sleep(1000*time.Millisecond), // Wait 1 second
+		// chromedp.SendKeys("#userNameInput", "clapiz"),
+		// chromedp.SendKeys("#passwordInput", "Mich7890!@#$"),
+		// chromedp.Sleep(1000*time.Millisecond),
+		// chromedp.Click("#submitButton", chromedp.ByQuery), // Use cssSelector value (use SelectorsHub)
+		// chromedp.Sleep(2000*time.Millisecond),
 
-		// -------------------------- Enter School Data for Website ------------------------------
-		chromedp.WaitVisible("#footer_school"),
-
+		// // -------------------------- Enter School Data for Website ------------------------------
+		// chromedp.WaitVisible("#footer_school"),
+		
 
 	)
 	
